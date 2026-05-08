@@ -103,6 +103,7 @@ body{
     margin-top:5px;
     margin-bottom:20px;
     color:#e0e0e0;
+    text-transform:capitalize;
 }
 
 .location{
@@ -159,32 +160,32 @@ body{
 
     <div class="weather-box">
 
-        <div class="weather-icon">
+        <div class="weather-icon" id="icon">
             ☀️
         </div>
 
         <div class="temperature" id="temp">
-            28°C
+            --°C
         </div>
 
         <div class="description" id="desc">
-            Sunny
+            Weather
         </div>
 
         <div class="location" id="location">
-            Pune, India
+            City, Country
         </div>
 
         <div class="details">
 
             <div class="card">
                 <h3>Humidity</h3>
-                <p id="humidity">65%</p>
+                <p id="humidity">--%</p>
             </div>
 
             <div class="card">
                 <h3>Wind</h3>
-                <p id="wind">12 km/h</p>
+                <p id="wind">-- km/h</p>
             </div>
 
         </div>
@@ -199,38 +200,74 @@ body{
 
 <script>
 
-function getWeather(){
+async function getWeather(){
 
-    let city = document.getElementById("city").value;
+    const city = document.getElementById("city").value;
 
-    if(city===""){
+    if(city === ""){
         alert("Please enter city name");
         return;
     }
 
-    // Dummy Data UI Update
+    // Replace with your actual API key
+    const apiKey = "YOUR_API_KEY";
 
-    document.getElementById("location").innerHTML = city + ", India";
+    const url =
+    `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
 
-    let temps = [22,25,28,30,32,26];
-    let weather = ["Cloudy","Sunny","Rainy","Storm","Clear Sky"];
-    let humidity = [55,60,65,70,80];
-    let wind = [10,12,14,8,16];
+    try{
 
-    let random = Math.floor(Math.random()*5);
+        const response = await fetch(url);
 
-    document.getElementById("temp").innerHTML =
-        temps[random] + "°C";
+        if(!response.ok){
+            throw new Error("City not found");
+        }
 
-    document.getElementById("desc").innerHTML =
-        weather[random];
+        const data = await response.json();
 
-    document.getElementById("humidity").innerHTML =
-        humidity[random] + "%";
+        // Update UI
+        document.getElementById("temp").innerHTML =
+            Math.round(data.main.temp) + "°C";
 
-    document.getElementById("wind").innerHTML =
-        wind[random] + " km/h";
+        document.getElementById("desc").innerHTML =
+            data.weather[0].description;
 
+        document.getElementById("location").innerHTML =
+            data.name + ", " + data.sys.country;
+
+        document.getElementById("humidity").innerHTML =
+            data.main.humidity + "%";
+
+        document.getElementById("wind").innerHTML =
+            data.wind.speed + " km/h";
+
+        // Weather Icons
+        const condition = data.weather[0].main;
+
+        let icon = "☀️";
+
+        if(condition === "Clouds"){
+            icon = "☁️";
+        }
+        else if(condition === "Rain"){
+            icon = "🌧️";
+        }
+        else if(condition === "Thunderstorm"){
+            icon = "⛈️";
+        }
+        else if(condition === "Snow"){
+            icon = "❄️";
+        }
+        else if(condition === "Mist"){
+            icon = "🌫️";
+        }
+
+        document.getElementById("icon").innerHTML = icon;
+
+    }
+    catch(error){
+        alert(error.message);
+    }
 }
 
 </script>
